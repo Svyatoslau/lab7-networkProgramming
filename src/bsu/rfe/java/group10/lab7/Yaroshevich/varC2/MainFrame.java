@@ -4,6 +4,8 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -41,6 +43,7 @@ public class MainFrame extends JFrame{
     private final JTextField textFieldTo;
     private final JTextArea textAreaIncoming;
     private final JTextArea textAreaOutgoing;
+    private boolean cursor=false;
     public MainFrame(){
         super(FRAME_TITLE);
         setMinimumSize(
@@ -74,7 +77,18 @@ public class MainFrame extends JFrame{
         final JPanel messagePanel = new JPanel();
         messagePanel.setBorder(BorderFactory.createTitledBorder("Сообщение"));
 
+        // Обработка событий крусора
+        textAreaOutgoing.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                cursor=true;
+            }
 
+            @Override
+            public void mouseExited(MouseEvent e) {
+                cursor=false;
+            }
+        });
 
 
         // Компоновка элементов окна
