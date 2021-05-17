@@ -2,10 +2,7 @@ package bsu.rfe.java.group10.lab7.Yaroshevich.varC2;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -44,6 +41,8 @@ public class MainFrame extends JFrame{
     private final JTextArea textAreaIncoming;
     private final JTextArea textAreaOutgoing;
     private boolean cursor=false;
+    private boolean ctrl=false;
+    private boolean enter=false;
     public MainFrame(){
         super(FRAME_TITLE);
         setMinimumSize(
@@ -90,6 +89,25 @@ public class MainFrame extends JFrame{
             }
         });
 
+        // Обработка событий клавиатуры
+        textAreaOutgoing.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int key =e.getKeyCode();
+                if (key ==17) ctrl=true;
+                if(key == 10) enter=true;
+                if(ctrl && enter && cursor){
+                    sendMessage();
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                int key =e.getKeyCode();
+                if (key ==17) ctrl=false;
+                if(key == 10) enter=false;
+            }
+        });
 
         // Компоновка элементов окна
         final GroupLayout layout1 = new GroupLayout(getContentPane());
