@@ -23,6 +23,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+@SuppressWarnings("serial")
 public class MainFrame extends JFrame{
 
     private static final String FRAME_TITLE = "Клиент мгновенных сообщений";
@@ -55,9 +56,26 @@ public class MainFrame extends JFrame{
         // Контейнер, обеспечивающий прокрутку текстовой области
         final JScrollPane scrollPaneIncoming = new JScrollPane(textAreaIncoming);
 
+        // Подиписи полей
+        final JLabel labelFrom = new JLabel("Подпись");
+        final JLabel labelTo = new JLabel("Получатель");
+
+        // Поля ввода имени пользователя и IP-адреса получаетлся
+        textFieldFrom = new JTextField(FROM_FIELD_DEFAULT_COLUMNS);
+        textFieldTo = new JTextField(TO_FIELD_DEFAULT_COLUMNS);
+
+        // Текстовая область для ввода сообщения
+        textAreaOutgoing = new JTextArea(OUTGOING_AREA_DEFAULT_ROWS,0);
+
+        // Контейнер обеспечивающий прокрутку текстовой области
+        final JScrollPane scrollPaneOutgoing = new JScrollPane(textAreaOutgoing);
+
         // Панель ввода сообщения
         final JPanel messagePanel = new JPanel();
         messagePanel.setBorder(BorderFactory.createTitledBorder("Сообщение"));
+
+
+
 
         // Компоновка элементов окна
         final GroupLayout layout1 = new GroupLayout(getContentPane());
@@ -78,24 +96,15 @@ public class MainFrame extends JFrame{
                 .addGap(MEDIUM_GAP)
                 .addComponent(messagePanel)
                 .addContainerGap());
-
-        // Подиписи полей
-        final JLabel labelFrom = new JLabel("Подпись");
-        final JLabel labelTo = new JLabel("Получатель");
-
-        // Поля ввода имени пользователя и IP-адреса получаетлся
-        textFieldFrom = new JTextField(FROM_FIELD_DEFAULT_COLUMNS);
-        textFieldTo = new JTextField(TO_FIELD_DEFAULT_COLUMNS);
-
-        // Текстовая область для ввода сообщения
-        textAreaOutgoing = new JTextArea(OUTGOING_AREA_DEFAULT_ROWS,0);
-
-        // Контейнер обеспечивающий прокрутку текстовой области
-        final JScrollPane scrollPaneOutgoing = new JScrollPane(textAreaOutgoing);
-
+        
         // Кнопка отправки сообщения
         final JButton sendButton = new JButton("Отправить");
-
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                sendMessage();
+            }
+        });
         // КОмпоновкаэлементов панели сообщения
         final GroupLayout layout2 = new GroupLayout(messagePanel);
         messagePanel.setLayout(layout2);
@@ -133,12 +142,45 @@ public class MainFrame extends JFrame{
                 .addGap(MEDIUM_GAP)
                 .addComponent(sendButton)
                 .addContainerGap());
-        sendButton.addActionListener(new ActionListener() {
+
+        // Создание и запуск потока-обработчика запросов
+        new Thread(new Runnable() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                sendMessage();
+            public void run() {
+                try{
+                    final ServerSocket serverSocket= new ServerSocket(SERVER_PORT);
+                    while(!Thread.interrupted()){
+                        final Socket socket = serverSocket.accept();
+                        final DataInputStream in = new DataInputStream(socket.getInputStream());
+
+                        // Читаем имя отправителя
+                        final  String senderName = in.readUTF();
+
+                        // Читаем сообщение
+                        final String message = in.readUTF();
+
+                        // Закрываем соеденение
+                        socket.close();
+
+                        // Выделяем IP-адресс
+                        final String address =
+                                ((InetSocketAddress) socket.getRemoteSocketAddress())
+                                .getAddress().getHostAddress();
+                        // Выводим сообщение в текстовую область
+                        textAreaIncoming.append(senderName+" ("+ address+ "): "+ message + "\n");
+
+                    }
+                }catch (IOException e){
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            "Ошибка в работе сервера","Ошибка",
+                            JOptionPane.ERROR_MESSAGE);
+
+                }
             }
-        });
+        }).start();
+
+
     }
     private void sendMessage(){
         try {
