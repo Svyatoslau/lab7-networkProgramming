@@ -10,6 +10,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Date;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -194,12 +195,14 @@ public class MainFrame extends JFrame{
                         // Закрываем соеденение
                         socket.close();
 
+                        // Создаём объект даты
+                        Date date = new Date();
                         // Выделяем IP-адресс
                         final String address =
                                 ((InetSocketAddress) socket.getRemoteSocketAddress())
                                 .getAddress().getHostAddress();
                         // Выводим сообщение в текстовую область
-                        textAreaIncoming.append(senderName+" ("+ address+ "): "+ message + "\n");
+                        textAreaIncoming.append(senderName+" ("+ address+ "): ("+date.toString()+") "+ message + "\n");
 
                     }
                 }catch (IOException e){
